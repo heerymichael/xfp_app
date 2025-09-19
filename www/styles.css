@@ -1,0 +1,112 @@
+/* styles.css - Simplified for standalone xFP app */
+
+:root {
+  --font-stack-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-stack-display: 'Fjalla One', 'Inter', sans-serif;
+  --transition-fast: 0.15s ease;
+  --transition-default: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-stack-primary);
+  background-color: #f7f7f7;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-stack-primary);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.content-wrapper hr {
+  margin: 60px auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-top: 3px solid #666 !important;
+  background: transparent !important;
+  height: 0 !important;
+  display: block !important;
+  clear: both !important;
+  width: 100% !important;
+}
+
+/* Form controls */
+.form-control {
+  font-size: 1rem !important;
+  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  background: #f6f6f6 !important;
+  border: 1.5px solid #d1d1d1 !important;
+  transition: border-color 0.2s ease;
+  height: 42px !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+  max-width: 310px !important;
+  box-sizing: border-box;
+  font-family: var(--font-stack-primary);
+}
+
+.form-control:focus {
+  border-color: #37af4a !important;
+  box-shadow: 0 0 0 0.2rem rgba(55, 175, 74, 0.25) !important;
+  outline: none !important;
+}
+
+/* Button styles */
+.btn {
+  font-family: var(--font-stack-primary);
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  
+  .content-wrapper {
+    max-width: 100%;
+    padding: 1rem 0.5rem;
+  }
+}

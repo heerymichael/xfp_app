@@ -1,0 +1,12 @@
+name: xfp-tables
+title: xfp-tables
+username: michael-heery
+account: michael-heery
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15463830
+bundleId: 10927029
+url: https://michael-heery.shinyapps.io/xfp-tables/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

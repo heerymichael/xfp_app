@@ -1,0 +1,416 @@
+# modules/mod_team_summaries.R - Team Summaries module
+
+library(shinyWidgets)
+
+# UI
+mod_team_summaries_ui <- function(id) {
+  ns <- NS(id)
+  
+  tagList(
+    h2("Team Summaries"),
+    p("Select a team to view individual player expected vs actual fantasy points performance.",
+      style = "color: #666; font-size: 1.1rem; margin-bottom: 20px;"),
+    
+    # Input controls - OUTSIDE container
+    div(
+      class = "filters-outside",
+      style = paste0("margin-bottom: 20px;"),
+      fluidRow(
+        column(4,
+               div(class = "form-group",
+                   tags$label("TEAM", class = "control-label"),
+                   uiOutput(ns("team_selector_ui")))),
+        column(4,
+               div(class = "form-group",
+                   tags$label("POSITION", class = "control-label"),
+                   selectInput(ns("team_position"), NULL,
+                               choices = c("All Positions" = "ALL", 
+                                           "RB" = "RB", 
+                                           "WR" = "WR", 
+                                           "TE" = "TE"),
+                               selected = "ALL",
+                               width = "100%"))),
+        column(4,
+               div(class = "form-group",
+                   tags$label("MINIMUM GAMES", class = "control-label"),
+                   numericInput(ns("team_min_games"), NULL,
+                                value = 1, min = 1, max = 18, step = 1,
+                                width = "100%")))
+      ),
+      # Week selector
+      comp_week_selector_ui(ns("week_selector"))
+    ),
+    
+    # Team Summary Table Container
+    div(
+      id = ns("team_table_container"),
+      class = "capture-container",
+      style = paste0(
+        "width: 1040px; ",
+        "margin: 0 auto; ",
+        "background: white; ",
+        "padding: 50px; ",
+        "border-radius: 12px; ",
+        "box-shadow: 0 2px 12px rgba(0,0,0,0.08); ",
+        "position: relative; ",
+        "overflow: hidden;"
+      ),
+      
+      # Conditional content based on selection
+      conditionalPanel(
+        condition = paste0("input['", ns("team_summary"), "'] == ''"),
+        div(
+          style = paste0(
+            "text-align: center; ",
+            "padding: 80px 20px; ",
+            "color: #666;"
+          ),
+          tags$i(class = "fas fa-football-ball", 
+                 style = paste0("font-size: 48px; color: #999; margin-bottom: 20px; display: block;")),
+          h3("Select a Team", 
+             style = paste0("color: #333; margin-bottom: 10px; border: none !important; padding: 0 !important;")),
+          p("Choose a team from the dropdown above to view player performance data", 
+            style = "font-size: 1.1rem;")
+        )
+      ),
+      
+      conditionalPanel(
+        condition = paste0("input['", ns("team_summary"), "'] != ''"),
+        # Background team logo
+        uiOutput(ns("background_logo")),
+        # Content
+        div(
+          style = "position: relative; z-index: 2;",
+          # Title and logo
+          div(
+            style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;",
+            h1(textOutput(ns("team_table_title")),
+               style = "margin: 0; font-size: 2.8rem; line-height: 66px; height: 66px; display: flex; align-items: center; border: none !important; padding: 0 !important;"),
+            tags$img(
+              src = "logos/ETR_ball_logo.png",
+              style = "height: 66px; width: auto;",
+              alt = "ETR Logo"
+            )
+          ),
+          # Subtitle
+          uiOutput(ns("team_subtitle")),
+          # Table
+          div(style = "margin-top: 15px;",
+              reactableOutput(ns("team_summary_table"))
+          )
+        )
+      )
+    ),
+    
+    # Download button
+    conditionalPanel(
+      condition = paste0("input['", ns("team_summary"), "'] != ''"),
+      div(
+        class = "download-section",
+        style = "text-align: center; margin-top: 10px; margin-bottom: 30px;",
+        actionButton(ns("download_team_table"), "Download Team Summary",
+                     style = "background: #37af4a; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; min-width: 150px;")
+      )
+    )
+  )
+}
+
+# Server
+mod_team_summaries_server <- function(id, data) {
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
+    # Initialize week selector
+    selected_weeks <- comp_week_selector_server("week_selector", data)
+    
+    # Render team selector with logos
+    output$team_selector_ui <- renderUI({
+      teams <- NFL_TEAMS$all
+      team_names <- sapply(teams, function(t) {
+        name <- get_team_name(t)
+        tools::toTitleCase(tolower(name))
+      })
+      logos <- paste0("logos/", teams, ".webp")
+      
+      # Create HTML content for each option
+      content <- c(
+        "Select a team...",
+        purrr::map2_chr(logos, team_names, ~ sprintf("<img src='%s' height='18px' style='margin-right:6px; vertical-align: middle;'/>%s", .x, .y))
+      )
+      
+      pickerInput(
+        ns("team_summary"), 
+        label = NULL,
+        choices = c("Select a team..." = "", setNames(teams, teams)),
+        selected = "",
+        multiple = FALSE,
+        choicesOpt = list(content = content),
+        options = list(`live-search` = TRUE),
+        width = "100%"
+      )
+    })
+    
+    # Render background logo
+    output$background_logo <- renderUI({
+      req(input$team_summary != "")
+      
+      tags$div(
+        style = paste0(
+          "position: absolute; ",
+          "top: 50%; ",
+          "left: 65%; ",
+          "transform: translate(-90%, -25%); ",
+          "width: 996px; ",
+          "height: 996px; ",
+          "background-image: url('logos/", input$team_summary, ".webp'); ",
+          "background-size: contain; ",
+          "background-repeat: no-repeat; ",
+          "background-position: center; ",
+          "opacity: 0.05; ",
+          "z-index: 1; ",
+          "pointer-events: none;"
+        )
+      )
+    })
+    
+    # Team table title
+    output$team_table_title <- renderText({
+      if (input$team_summary != "") {
+        team_name <- get_team_name(input$team_summary)
+        paste0(team_name, " xFP")
+      } else {
+        ""
+      }
+    })
+    
+    # Team subtitle
+    output$team_subtitle <- renderUI({
+      req(input$team_summary != "")
+      
+      pos_text <- if(input$team_position == "ALL") "all positions" else paste0(input$team_position, "s")
+      team_name <- get_team_name(input$team_summary)
+      all_weeks <- sort(unique(data()$week))
+      week_text <- get_week_range_text(selected_weeks(), all_weeks)
+      
+      p(
+        HTML(paste0("Showing expected and actual fantasy points for <b>", pos_text, 
+                    "</b> on the <b>", team_name, "</b> during <b>", week_text, "</b>.")),
+        style = paste0(
+          "margin: 0; ",
+          "color: ", etr_colors$gray_600, "; ",
+          "font-size: 1.8rem; ",
+          "font-family: 'Inter', sans-serif; ",
+          "font-weight: 500;"
+        )
+      )
+    })
+    
+    # Prepare data
+    team_summary_data <- reactive({
+      req(data(), input$team_position, input$team_min_games)
+      req(selected_weeks())
+      
+      if (is.null(input$team_summary) || input$team_summary == "") {
+        return(data.frame())
+      }
+      
+      prepare_team_summary_data(
+        data(),
+        input$team_summary,
+        input$team_position,
+        selected_weeks(),
+        input$team_min_games
+      )
+    })
+    
+    # Create reactable
+    output$team_summary_table <- renderReactable({
+      if (is.null(input$team_summary) || input$team_summary == "") {
+        return(NULL)
+      }
+      
+      df <- team_summary_data()
+      
+      if (nrow(df) == 0) {
+        return(create_empty_table("No data available for the selected filters"))
+      }
+      
+      create_single_team_table(df)
+    })
+  })
+}
+
+# Helper functions remain unchanged
+create_single_team_table <- function(df) {
+  max_expected <- max(df$avg_expected, na.rm = TRUE)
+  max_actual <- max(df$avg_actual, na.rm = TRUE)
+  max_val <- max(c(max_expected, max_actual), na.rm = TRUE) * 1.1
+  
+  if (max_val <= 0 || is.na(max_val) || is.infinite(max_val)) {
+    max_val <- 25
+  }
+  
+  df$bar_chart <- ""
+  
+  base_theme <- etr_reactable(
+    font_size = 17.6,
+    header_font_size = 15,
+    cell_padding = 0,
+    centered = FALSE
+  )
+  
+  base_theme$headerStyle$background <- "transparent"
+  base_theme$headerStyle$backgroundColor <- "transparent"
+  base_theme$backgroundColor <- "transparent"
+  
+  reactable(
+    df,
+    theme = base_theme,
+    columnGroups = list(
+      colGroup(
+        name = "FP PER GAME",
+        columns = c("avg_expected", "avg_actual"),
+        headerStyle = list(backgroundColor = "transparent")
+      )
+    ),
+    columns = list(
+      player = colDef(
+        name = "PLAYER",
+        width = 290,
+        headerStyle = list(backgroundColor = "transparent"),
+        style = list(
+          borderRight = paste0(etr_borders$width_medium, " solid ", etr_colors$gray_500),
+          backgroundColor = "transparent"
+        ),
+        cell = function(value, index) {
+          position <- df$position[index]
+          position_full <- switch(position,
+                                  "RB" = "RUNNING BACK",
+                                  "WR" = "WIDE RECEIVER",
+                                  "TE" = "TIGHT END",
+                                  "QB" = "QUARTERBACK",
+                                  position)
+          
+          htmltools::div(
+            style = "position: relative; z-index: 1; display: table-cell; vertical-align: middle; padding: 8px 10px;",
+            htmltools::div(
+              value,
+              style = paste0(
+                "font-weight: ", etr_fonts$weight_semibold, "; ",
+                "font-size: 1.32rem; ",
+                "margin: 0; ",
+                "line-height: 1.1; ",
+                "display: block;"
+              )
+            ),
+            htmltools::div(
+              position_full,
+              style = paste0(
+                "font-size: 0.88rem; ",
+                "color: ", etr_colors$gray_600, "; ",
+                "margin: 2px 0 0 0; ",
+                "line-height: 1.1; ",
+                "display: block;"
+              )
+            )
+          )
+        }
+      ),
+      position = colDef(show = FALSE),
+      games_played = colDef(
+        name = "GAMES",
+        width = 100,
+        align = "center",
+        headerStyle = list(backgroundColor = "transparent"),
+        style = list(backgroundColor = "transparent"),
+        cell = function(value) {
+          div(value, class = "stats-value")
+        }
+      ),
+      avg_expected = colDef(
+        name = "EXPECTED",
+        width = 100,
+        align = "center",
+        headerStyle = list(backgroundColor = "transparent"),
+        style = list(backgroundColor = "transparent"),
+        cell = function(value) {
+          div(format(round(value, 1), nsmall = 1), class = "stats-value")
+        }
+      ),
+      avg_actual = colDef(
+        name = "ACTUAL",
+        width = 100,
+        align = "center",
+        headerStyle = list(backgroundColor = "transparent"),
+        style = list(backgroundColor = "transparent"),
+        cell = function(value) {
+          div(format(round(value, 1), nsmall = 1), class = "stats-value")
+        }
+      ),
+      total_expected = colDef(show = FALSE),
+      total_actual = colDef(show = FALSE),
+      bar_chart = colDef(
+        name = "",
+        minWidth = 350,
+        headerStyle = list(backgroundColor = "transparent"),
+        style = list(backgroundColor = "transparent"),
+        cell = function(value, index) {
+          create_team_bar_chart_cell(
+            df$avg_expected[index],
+            df$avg_actual[index],
+            max_val,
+            index == 1
+          )
+        }
+      )
+    ),
+    borderless = TRUE,
+    showSortIcon = FALSE,
+    striped = FALSE,
+    compact = TRUE,
+    wrap = FALSE,
+    defaultPageSize = nrow(df),
+    showPageInfo = FALSE,
+    showPagination = FALSE,
+    style = list(
+      fontFamily = paste0("'", etr_fonts$family_primary, "', sans-serif"),
+      width = "940px",
+      maxWidth = "940px",
+      backgroundColor = "transparent"
+    )
+  )
+}
+
+create_team_bar_chart_cell <- function(expected, actual, max_val, show_labels = FALSE) {
+  expected_width <- if (expected > 0) (expected / max_val) * 100 else 0
+  actual_width <- if (actual > 0) (actual / max_val) * 100 else 0
+  
+  div(
+    class = "bar-chart-cell",
+    div(
+      class = "bar-container",
+      if (actual_width > 0) {
+        div(
+          class = "actual-bar",
+          style = paste0("width: ", actual_width, "%;")
+        )
+      },
+      if (expected_width > 0) {
+        div(
+          class = "expected-bar",
+          style = paste0("width: ", expected_width, "%;"),
+          if (show_labels) {
+            div("EXPECTED POINTS",
+                class = "bar-label expected-label",
+                style = "right: 8px; top: 1px; transform: translateY(-50%);")
+          }
+        )
+      },
+      if (show_labels && actual_width > 15) {
+        div("ACTUAL POINTS",
+            class = "bar-label actual-label",
+            style = "left: 8px;")
+      }
+    )
+  )
+}
