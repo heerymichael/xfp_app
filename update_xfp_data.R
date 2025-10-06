@@ -130,3 +130,4 @@ cat("Data is now available at:\n")
 cat(target_sheet_url, "\n\n")
 cat("Your Shiny app will automatically use this updated data.\n")
 cat("No need to redeploy the app!\n")
+
