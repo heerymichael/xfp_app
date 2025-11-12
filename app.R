@@ -19,14 +19,7 @@ if(file.exists("global.R")) {
         season = as.numeric(season)
       )
   }, error = function(e) {
-    cat("Warning: Could not load qb_data. Error:", e$message, "\n")
-    data.frame(
-      week = numeric(0),
-      season = numeric(0),
-      team_qb = character(0),
-      posteam = character(0),
-      stringsAsFactors = FALSE
-    )
+    stop("ERROR: Could not load QB data from Google Sheets. Error: ", e$message)
   })
 } else {
   # If global.R doesn't exist or isn't loading, source everything directly here
@@ -61,51 +54,46 @@ if(file.exists("global.R")) {
   source("modules/mod_team_summaries.R")
   source("modules/mod_team_detail.R")
   
-  # Load/create data
+  # Load/create data - STOP if files don't exist
   if(file.exists("data/combined_xfp.csv")) {
     combined_xfp_data <- read.csv("data/combined_xfp.csv", stringsAsFactors = FALSE)
   } else {
-    combined_xfp_data <- data.frame(
-      player = character(0),
-      position = character(0),
-      team = character(0),
-      week = numeric(0),
-      xFP = numeric(0),
-      actual_FP = numeric(0),
-      receiver_id = character(0)
-    )
+    stop("ERROR: data/combined_xfp.csv file not found. Cannot start application without data.")
   }
   
   if(file.exists("data/all_players_xfp.csv")) {
     all_players_xfp <- read.csv("data/all_players_xfp.csv", stringsAsFactors = FALSE)
   } else {
-    all_players_xfp <- data.frame(
-      player = character(0),
-      position = character(0),
-      team = character(0),
-      week = numeric(0),
-      knn_fps = numeric(0)
-    )
+    stop("ERROR: data/all_players_xfp.csv file not found. Cannot start application without data.")
   }
   
   # Process data
   combined_xfp_data <- process_xfp_data(combined_xfp_data)
   all_players_xfp <- process_xfp_data(all_players_xfp)
   
-  # Create dummy qb_data
-  qb_data_raw <- data.frame(
-    week = numeric(0),
-    season = numeric(0),
-    team_qb = character(0),
-    posteam = character(0)
-  )
+  # Load QB data
+  QB_DATA_SHEET_URL <- "https://docs.google.com/spreadsheets/d/10MbQBNY1fNJ1pp5VnNXmEtX-TdAsaN_hOE6DpVy-krI/edit?gid=0#gid=0"
+  
+  qb_data_raw <- tryCatch({
+    read_sheet(
+      QB_DATA_SHEET_URL,
+      col_types = "c"
+    ) %>%
+      mutate(
+        week = as.numeric(week),
+        season = as.numeric(season)
+      )
+  }, error = function(e) {
+    stop("ERROR: Could not load QB data from Google Sheets. Error: ", e$message)
+  })
 }
 
 # UI Definition - Changed from fluidPage to navbarPage
 ui <- navbarPage(
   title = div(
-    tags$img(src = "logos/ETR_ball_logo.png", height = "30px", style = "margin-right: 10px; vertical-align: middle;"),
-    span("xFantasy Points", style = "vertical-align: middle;")
+    style = "display: flex; align-items: center;",
+    tags$img(src = "logos/ETR_ball_logo.png", height = "60px", style = "margin-right: 20px;"),
+    span("xFantasy Points", style = "font-size: 2.5rem !important; font-weight: 700 !important;")
   ),
   theme = bs_theme(
     version = 5,
@@ -142,14 +130,45 @@ ui <- navbarPage(
   background: var(--etr-bg-secondary, #f0f5f1) !important;
   border-bottom: 2px solid #e8ede9;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  padding: 1rem 1rem 0.5rem 1rem !important;
+  padding: 1.5rem 1rem !important;
   position: relative;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 90px !important;
+}
+
+.container-fluid {
+  max-width: 1800px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .navbar-brand {
   color: var(--etr-gray-900, #2d2d2d) !important;
   font-weight: 700 !important;
-  font-size: 1.5rem !important;
+  font-size: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-right: 2rem !important;
+  padding: 0 !important;
+}
+
+.navbar-brand img {
+  height: 60px !important;
+  width: auto !important;
+}
+
+.navbar-brand span {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+}
+
+.navbar-nav {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
 }
 
 .navbar-nav .nav-link {
@@ -164,6 +183,9 @@ ui <- navbarPage(
   background: transparent !important;
   border: none !important;
   font-family: var(--etr-font-primary, var(--font-stack-primary));
+  display: flex !important;
+  align-items: center !important;
+  height: 45px !important;
 }
 
 .navbar-nav .nav-link:hover {
@@ -202,10 +224,25 @@ ui <- navbarPage(
         background: #f0f4f1;
       }
       
+      .tab-content {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      .tab-pane {
+        width: 100% !important;
+      }
+      
       .main-container, .content-wrapper {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 30px 20px;
+        max-width: 1800px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 30px 20px !important;
+        display: block !important;
+      }
+      
+      .container-fluid > .content-wrapper {
+        max-width: 1800px !important;
       }
       
       .capture-container {
@@ -214,6 +251,8 @@ ui <- navbarPage(
         box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         overflow: hidden;
         margin-bottom: 15px;
+        margin-left: auto;
+        margin-right: auto;
       }
       
       /* Button styling with larger fonts */
@@ -342,6 +381,14 @@ ui <- navbarPage(
       }
       
       /* Input controls with proper width filling */
+      .filters-outside {
+        max-width: 1750px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+        padding: 0 10px !important;
+      }
+      
       .filters-outside .form-group {
         margin-bottom: 20px;
       }

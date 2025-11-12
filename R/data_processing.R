@@ -122,29 +122,36 @@ prepare_top_performers_data <- function(data, position, weeks, min_games, num_pl
       filter(expected_points > 0)
   }
   
-  # Sort based on view_mode
+  # Sort based on view_mode - first to identify top players, then for display
   if (!is.null(view_mode)) {
     if (view_mode == "underperformers") {
-      # For underperformers: sort by highest expected xFP
+      # For underperformers: identify players with lowest fp_diff
       result <- result %>%
+        arrange(fp_diff_per_game) %>%
+        slice_head(n = num_players) %>%
+        # Then sort for display by highest expected points
         arrange(desc(expected_points))
     } else if (view_mode == "overperformers") {
-      # For overperformers: sort by highest actual FP
+      # For overperformers: identify players with highest fp_diff
       result <- result %>%
+        arrange(desc(fp_diff_per_game)) %>%
+        slice_head(n = num_players) %>%
+        # Then sort for display by highest actual points
         arrange(desc(actual_points))
     } else {
       # Default sorting by expected points
       result <- result %>%
-        arrange(desc(expected_points))
+        arrange(desc(expected_points)) %>%
+        slice_head(n = num_players)
     }
   } else {
     # Default sorting by expected points
     result <- result %>%
-      arrange(desc(expected_points))
+      arrange(desc(expected_points)) %>%
+      slice_head(n = num_players)
   }
   
-  result %>%
-    slice_head(n = num_players)
+  result
 }
 
 # Prepare data for Team Summaries

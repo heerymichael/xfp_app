@@ -115,19 +115,57 @@ sheet_write(
 
 cat("✓ Data successfully uploaded to Google Sheet.\n\n")
 
+# Process QB/Offense data ====
+cat("Step 4: Processing QB/Offense data...\n")
+
+# Source sheet URL for Offenses data
+offenses_source_url <- "https://docs.google.com/spreadsheets/d/1St_fXXt15YHSu92ombzmXnQAxX8rmjQKhYfSnMMUuuQ/edit?gid=0#gid=0"
+
+# Target sheet URL for QB data
+qb_target_url <- "https://docs.google.com/spreadsheets/d/10MbQBNY1fNJ1pp5VnNXmEtX-TdAsaN_hOE6DpVy-krI/edit?gid=0#gid=0"
+
+# Download Offenses data
+offenses_data <- read_sheet(offenses_source_url, sheet = "Offenses") %>%
+  clean_names()
+
+cat("✓ Offenses data downloaded successfully.\n")
+
+# Process and filter QB data
+qb_data <- offenses_data %>%
+  filter(!is.na(as.numeric(week))) %>%  # Filter out non-numeric weeks
+  select(season, week, posteam, team_qb)
+
+cat("✓ QB data processed.\n")
+cat("  - Total rows:", nrow(qb_data), "\n")
+cat("  - Seasons included:", paste(sort(unique(qb_data$season)), collapse = ", "), "\n")
+cat("  - Weeks included:", paste(sort(unique(as.numeric(qb_data$week))), collapse = ", "), "\n\n")
+
+# Upload QB data to target sheet
+cat("Uploading QB data to target Google Sheet...\n")
+
+sheet_write(
+  qb_data,
+  ss = qb_target_url,
+  sheet = "Sheet1"
+)
+
+cat("✓ QB data successfully uploaded to Google Sheet.\n\n")
+
 # Optional: Save local backup
-cat("Step 4: Saving local backup...\n")
+cat("Step 5: Saving local backup...\n")
 dir.create("data", showWarnings = FALSE)
 write_csv(combined_xfp_data, "data/combined_xfp_data_backup.csv")
-cat("✓ Local backup saved to data/combined_xfp_data_backup.csv\n\n")
+write_csv(qb_data, "data/qb_data_backup.csv")
+cat("✓ Local backups saved to data/ folder\n\n")
 
 # Summary
 cat("====================================\n")
 cat("UPDATE COMPLETE!\n")
 cat("====================================\n")
-cat("Processed", nrow(combined_xfp_data), "rows of data\n")
+cat("Processed", nrow(combined_xfp_data), "rows of xFP data\n")
+cat("Processed", nrow(qb_data), "rows of QB data\n\n")
 cat("Data is now available at:\n")
-cat(target_sheet_url, "\n\n")
+cat("xFP Data:", target_sheet_url, "\n")
+cat("QB Data:", qb_target_url, "\n\n")
 cat("Your Shiny app will automatically use this updated data.\n")
 cat("No need to redeploy the app!\n")
-

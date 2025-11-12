@@ -82,9 +82,13 @@ mod_over_under_performers_ui <- function(id) {
         border: 1px solid #ced4da;
         border-radius: 6px;
         padding: 20px;
-        margin-top: 20px;
+        margin-top: 40px;
         position: relative;
         padding-top: 35px;
+      }
+      
+      .qb-filter-container.collapsed {
+        padding-bottom: 10px;
       }
       
       .qb-filter-label {
@@ -100,6 +104,37 @@ mod_over_under_performers_ui <- function(id) {
         letter-spacing: 0.5px !important;
         font-family: 'Inter', sans-serif !important;
         line-height: 1;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+      }
+      
+      .collapse-icon {
+        font-size: 14px;
+        transition: transform 0.2s ease;
+      }
+      
+      .collapse-icon.collapsed {
+        transform: rotate(-90deg);
+      }
+      
+      .collapsible-content {
+        max-height: 1000px;
+        overflow: visible;
+        transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+        opacity: 1;
+        padding-top: 0;
+      }
+      
+      .collapsible-content.collapsed {
+        max-height: 0 !important;
+        opacity: 0;
+        overflow: hidden;
+        padding-top: 0;
+        margin-top: 0;
       }
       
       .qb-filter-container .form-control,
@@ -111,7 +146,7 @@ mod_over_under_performers_ui <- function(id) {
     # Input controls - Filters OUTSIDE container
     div(
       class = "filters-outside",
-      style = paste0("margin-bottom: 30px;"),
+      style = paste0("margin-bottom: 30px; max-width: 1750px; margin-left: auto; margin-right: auto; width: 100%;"),
       
       # First row - Position and View Mode
       fluidRow(
@@ -122,8 +157,8 @@ mod_over_under_performers_ui <- function(id) {
                                choices = c("All Positions" = "ALL",
                                            "Running Back" = "RB", 
                                            "Wide Receiver" = "WR",
-                                           "Wide Receiver & Tight End" = "WR_TE",
-                                           "Tight End" = "TE"),
+                                           "Tight End" = "TE",
+                                           "Wide Receiver & Tight End" = "WR_TE"),
                                selected = "ALL",
                                width = "100%"))),
         column(6,
@@ -138,6 +173,7 @@ mod_over_under_performers_ui <- function(id) {
       
       # Second row - Number of Players, Minimum Games, and Minimum xFP
       fluidRow(
+        style = "margin-top: 30px;",
         column(4,
                div(class = "form-group",
                    tags$label("NUMBER OF PLAYERS", class = "control-label"),
@@ -161,56 +197,87 @@ mod_over_under_performers_ui <- function(id) {
       # Third row - QB filters
       div(
         class = "qb-filter-container",
-        tags$label("SPECIFY QB WEEKS", class = "qb-filter-label"),
-        fluidRow(
-          column(5,
-                 div(class = "form-group",
-                     tags$label("TEAM", class = "control-label"),
-                     selectInput(ns("qb_team"), NULL,
-                                 choices = c("Select a team..." = "",
-                                             setNames(NFL_TEAMS$all, 
-                                                      sapply(NFL_TEAMS$all, get_team_name))),
-                                 selected = "",
-                                 width = "100%"))),
-          column(5,
-                 div(class = "form-group",
-                     tags$label("QUARTERBACK", class = "control-label"),
-                     selectInput(ns("qb_selector"), NULL,
-                                 choices = c("All Quarterbacks" = "ALL"),
-                                 selected = "ALL",
-                                 width = "100%"))),
-          column(2,
-                 div(class = "form-group",
-                     tags$label("", class = "control-label", style = "display: block; height: 39px;"),
-                     actionButton(ns("clear_qb"), "Clear",
-                                  class = "btn-sm",
-                                  style = "width: 100%; margin-top: 0;")))
+        style = "margin-top: 40px;",
+        tags$label(
+          class = "qb-filter-label",
+          id = ns("qb_collapse_label"),
+          onclick = paste0("
+            var content = document.getElementById('", ns("qb_content"), "');
+            var icon = document.getElementById('", ns("qb_icon"), "');
+            content.classList.toggle('collapsed');
+            icon.classList.toggle('collapsed');
+          "),
+          span("SPECIFY QB WEEKS"),
+          span(id = ns("qb_icon"), class = "collapse-icon collapsed", "▼")
+        ),
+        div(
+          id = ns("qb_content"),
+          class = "collapsible-content collapsed",
+          fluidRow(
+            column(5,
+                   div(class = "form-group",
+                       tags$label("TEAM", class = "control-label"),
+                       selectInput(ns("qb_team"), NULL,
+                                   choices = c("Select a team..." = "",
+                                               setNames(NFL_TEAMS$all, 
+                                                        sapply(NFL_TEAMS$all, get_team_name))),
+                                   selected = "",
+                                   width = "100%"))),
+            column(5,
+                   div(class = "form-group",
+                       tags$label("QUARTERBACK", class = "control-label"),
+                       selectInput(ns("qb_selector"), NULL,
+                                   choices = c("All Quarterbacks" = "ALL"),
+                                   selected = "ALL",
+                                   width = "100%"))),
+            column(2,
+                   div(class = "form-group",
+                       tags$label("", class = "control-label", style = "display: block; height: 39px;"),
+                       actionButton(ns("clear_qb"), "Clear",
+                                    class = "btn-sm",
+                                    style = "width: 100%; margin-top: 0;")))
+          )
         )
       ),
       
       # Fourth row - Exclude Players
       div(
         class = "qb-filter-container",
-        style = "margin-top: 20px;",
-        tags$label("EXCLUDE PLAYERS", class = "qb-filter-label"),
-        fluidRow(
-          column(10,
-                 div(class = "form-group",
-                     tags$label("SELECT PLAYERS TO EXCLUDE FROM ANALYSIS", class = "control-label"),
-                     selectizeInput(ns("excluded_players"), NULL,
-                                    choices = NULL,
-                                    multiple = TRUE,
-                                    options = list(
-                                      placeholder = "Select players to exclude from analysis",
-                                      maxItems = NULL
-                                    ),
-                                    width = "100%"))),
-          column(2,
-                 div(class = "form-group",
-                     tags$label("", class = "control-label", style = "display: block; height: 39px;"),
-                     actionButton(ns("clear_excluded"), "Clear All",
-                                  class = "btn-sm",
-                                  style = "width: 100%; margin-top: 0;")))
+        style = "margin-top: 40px;",
+        tags$label(
+          class = "qb-filter-label",
+          id = ns("exclude_collapse_label"),
+          onclick = paste0("
+            var content = document.getElementById('", ns("exclude_content"), "');
+            var icon = document.getElementById('", ns("exclude_icon"), "');
+            content.classList.toggle('collapsed');
+            icon.classList.toggle('collapsed');
+          "),
+          span("EXCLUDE PLAYERS"),
+          span(id = ns("exclude_icon"), class = "collapse-icon collapsed", "▼")
+        ),
+        div(
+          id = ns("exclude_content"),
+          class = "collapsible-content collapsed",
+          fluidRow(
+            column(10,
+                   div(class = "form-group",
+                       tags$label("SELECT PLAYERS TO EXCLUDE FROM ANALYSIS", class = "control-label"),
+                       selectizeInput(ns("excluded_players"), NULL,
+                                      choices = NULL,
+                                      multiple = TRUE,
+                                      options = list(
+                                        placeholder = "Select players to exclude from analysis",
+                                        maxItems = NULL
+                                      ),
+                                      width = "100%"))),
+            column(2,
+                   div(class = "form-group",
+                       tags$label("", class = "control-label", style = "display: block; height: 39px;"),
+                       actionButton(ns("clear_excluded"), "Clear All",
+                                    class = "btn-sm",
+                                    style = "width: 100%; margin-top: 0;")))
+          )
         )
       ),
       
@@ -266,6 +333,11 @@ mod_over_under_performers_ui <- function(id) {
       # Table
       div(style = "margin-top: 15px;",
           reactableOutput(ns("xfp_table"))
+      ),
+      
+      # Footnote
+      div(style = "margin-top: 15px;",
+          uiOutput(ns("table_footnote"))
       )
     ),
     
@@ -504,21 +576,15 @@ mod_over_under_performers_server <- function(id, data, qb_data, rookie_list = NU
                                    "overperformers" = "players with the <b>largest positive difference</b> between actual and expected fantasy points",
                                    "underperformers" = "players with the <b>largest negative difference</b> between actual and expected fantasy points")
       
-      # Add minimum xFP filter to subtitle if > 0
-      min_xfp_text <- ""
-      if (!is.null(input$min_xfp) && input$min_xfp > 0) {
-        min_xfp_text <- paste0(" with at least <b>", input$min_xfp, " xFP per game</b>")
-      }
-      
       if (qb_filter_active) {
         team_name <- get_team_name(input$qb_team)
         base_text <- HTML(paste0("Table shows ", metric_description, " for <b>", 
-                                 pos_name, "</b>", min_xfp_text, " during weeks where <b>", 
+                                 pos_name, "</b> during weeks where <b>", 
                                  input$qb_selector, "</b> was starting quarterback for the <b>", team_name, "</b>."))
       } else {
         week_text <- get_week_range_text(selected_weeks(), all_weeks)
         base_text <- HTML(paste0("Table shows ", metric_description, " for <b>", 
-                                 pos_name, "</b>", min_xfp_text, " during <b>", week_text, "</b>."))
+                                 pos_name, "</b> during <b>", week_text, "</b>."))
       }
       
       p(base_text,
@@ -529,6 +595,39 @@ mod_over_under_performers_server <- function(id, data, qb_data, rookie_list = NU
           "font-family: 'Inter', sans-serif; ",
           "font-weight: 500;"
         ))
+    })
+    
+    # Dynamic footnote
+    output$table_footnote <- renderUI({
+      min_games <- input$min_games %||% 1
+      min_xfp <- input$min_xfp %||% 0
+      
+      footnote_parts <- c()
+      
+      if (min_games > 1) {
+        footnote_parts <- c(footnote_parts, paste0("minimum ", min_games, " games"))
+      }
+      
+      if (min_xfp > 0) {
+        footnote_parts <- c(footnote_parts, paste0("minimum ", min_xfp, " xFP per game"))
+      }
+      
+      if (length(footnote_parts) > 0) {
+        footnote_text <- paste0("Note: Players shown meet the following criteria: ", 
+                                paste(footnote_parts, collapse = ", "), ".")
+        
+        p(footnote_text,
+          style = paste0(
+            "margin: 0; ",
+            "color: ", etr_colors$gray_500, "; ",
+            "font-size: 1.4rem; ",
+            "font-family: 'Inter', sans-serif; ",
+            "font-style: italic; ",
+            "font-weight: 400;"
+          ))
+      } else {
+        NULL
+      }
     })
     
     # Prepare table data
