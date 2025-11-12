@@ -51,7 +51,9 @@ get_team_name_mapping <- function() {
 
 # Prepare data for Top Performers table
 prepare_top_performers_data <- function(data, position, weeks, min_games, num_players, 
-                                        rookies_only = FALSE, rookie_list = NULL) {
+                                        rookies_only = FALSE, rookie_list = NULL,
+                                        view_mode = NULL, min_xfp = NULL, 
+                                        excluded_players = NULL) {
   
   if (is.null(data) || nrow(data) == 0) return(data.frame())
   
@@ -68,8 +70,14 @@ prepare_top_performers_data <- function(data, position, weeks, min_games, num_pl
     filter(week %in% !!weeks)
   
   if (position != "ALL") {
-    filtered_data <- filtered_data %>%
-      filter(position == !!position)
+    # Handle WR_TE combination
+    if (position == "WR_TE") {
+      filtered_data <- filtered_data %>%
+        filter(position %in% c("WR", "TE"))
+    } else {
+      filtered_data <- filtered_data %>%
+        filter(position == !!position)
+    }
   }
   
   # Apply rookies filter if enabled
@@ -78,7 +86,13 @@ prepare_top_performers_data <- function(data, position, weeks, min_games, num_pl
       filter(player %in% rookie_list)
   }
   
-  filtered_data %>%
+  # Apply excluded players filter
+  if (!is.null(excluded_players) && length(excluded_players) > 0) {
+    filtered_data <- filtered_data %>%
+      filter(!(player %in% excluded_players))
+  }
+  
+  result <- filtered_data %>%
     group_by(player, position, team) %>%
     summarise(
       games_played = n_distinct(week),
@@ -94,13 +108,42 @@ prepare_top_performers_data <- function(data, position, weeks, min_games, num_pl
     mutate(
       expected_points = coalesce(expected_points, 0),
       actual_points = coalesce(actual_points, 0),
-      team_name = coalesce(team_name, paste(team, "TEAM"))
+      team_name = coalesce(team_name, paste(team, "TEAM")),
+      fp_diff_per_game = actual_points - expected_points
     ) %>%
-    filter(
-      games_played >= !!min_games,
-      expected_points > 0
-    ) %>%
-    arrange(desc(expected_points)) %>%
+    filter(games_played >= !!min_games)
+  
+  # Apply minimum xFP filter if provided
+  if (!is.null(min_xfp) && !is.na(min_xfp)) {
+    result <- result %>%
+      filter(expected_points >= !!min_xfp)
+  } else {
+    result <- result %>%
+      filter(expected_points > 0)
+  }
+  
+  # Sort based on view_mode
+  if (!is.null(view_mode)) {
+    if (view_mode == "underperformers") {
+      # For underperformers: sort by highest expected xFP
+      result <- result %>%
+        arrange(desc(expected_points))
+    } else if (view_mode == "overperformers") {
+      # For overperformers: sort by highest actual FP
+      result <- result %>%
+        arrange(desc(actual_points))
+    } else {
+      # Default sorting by expected points
+      result <- result %>%
+        arrange(desc(expected_points))
+    }
+  } else {
+    # Default sorting by expected points
+    result <- result %>%
+      arrange(desc(expected_points))
+  }
+  
+  result %>%
     slice_head(n = num_players)
 }
 

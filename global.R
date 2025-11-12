@@ -68,6 +68,7 @@ source("R/data_processing.R")
 source("modules/components/comp_week_selector.R")
 source("modules/components/comp_team_selector.R")
 source("modules/mod_top_performers.R")
+source("modules/mod_over_under_performers.R")
 source("modules/mod_team_summaries.R")
 source("modules/mod_team_detail.R")
 

@@ -76,6 +76,36 @@ mod_top_performers_ui <- function(id) {
         border-radius: 6px;
         margin-top: 20px;
       }
+      
+      .qb-filter-container {
+        background: #f0f4f1;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 20px;
+        margin-top: 20px;
+        position: relative;
+        padding-top: 35px;
+      }
+      
+      .qb-filter-label {
+        position: absolute;
+        top: -12px;
+        left: 15px;
+        background: #f0f4f1;
+        padding: 0 8px;
+        font-size: 19px !important;
+        font-weight: 600 !important;
+        color: #999 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        font-family: 'Inter', sans-serif !important;
+        line-height: 1;
+      }
+      
+      .qb-filter-container .form-control,
+      .qb-filter-container .selectize-input {
+        background: white !important;
+      }
     "))),
     
     # Input controls - Filters OUTSIDE container
@@ -107,6 +137,63 @@ mod_top_performers_ui <- function(id) {
                    numericInput(ns("min_games"), NULL,
                                 value = 1, min = 1, max = 18, step = 1,
                                 width = "100%")))
+      ),
+      
+      # QB filter section
+      div(
+        class = "qb-filter-container",
+        style = "margin-top: 20px;",
+        tags$label("SPECIFY QB WEEKS", class = "qb-filter-label"),
+        fluidRow(
+          column(5,
+                 div(class = "form-group",
+                     tags$label("TEAM", class = "control-label"),
+                     selectInput(ns("qb_team"), NULL,
+                                 choices = c("Select a team..." = "",
+                                             setNames(NFL_TEAMS$all, 
+                                                      sapply(NFL_TEAMS$all, get_team_name))),
+                                 selected = "",
+                                 width = "100%"))),
+          column(5,
+                 div(class = "form-group",
+                     tags$label("QUARTERBACK", class = "control-label"),
+                     selectInput(ns("qb_selector"), NULL,
+                                 choices = c("All Quarterbacks" = "ALL"),
+                                 selected = "ALL",
+                                 width = "100%"))),
+          column(2,
+                 div(class = "form-group",
+                     tags$label("", class = "control-label", style = "display: block; height: 39px;"),
+                     actionButton(ns("clear_qb"), "Clear",
+                                  class = "btn-sm",
+                                  style = "width: 100%; margin-top: 0;")))
+        )
+      ),
+      
+      # Exclude Players section
+      div(
+        class = "qb-filter-container",
+        style = "margin-top: 20px;",
+        tags$label("EXCLUDE PLAYERS", class = "qb-filter-label"),
+        fluidRow(
+          column(10,
+                 div(class = "form-group",
+                     tags$label("SELECT PLAYERS TO EXCLUDE FROM ANALYSIS", class = "control-label"),
+                     selectizeInput(ns("excluded_players"), NULL,
+                                    choices = NULL,
+                                    multiple = TRUE,
+                                    options = list(
+                                      placeholder = "Select players to exclude from analysis",
+                                      maxItems = NULL
+                                    ),
+                                    width = "100%"))),
+          column(2,
+                 div(class = "form-group",
+                     tags$label("", class = "control-label", style = "display: block; height: 39px;"),
+                     actionButton(ns("clear_excluded"), "Clear All",
+                                  class = "btn-sm",
+                                  style = "width: 100%; margin-top: 0;")))
+        )
       ),
       
       # Week selector
@@ -176,12 +263,179 @@ mod_top_performers_ui <- function(id) {
 }
 
 # Server
-mod_top_performers_server <- function(id, data, rookie_list = NULL) {
+mod_top_performers_server <- function(id, data, qb_data, rookie_list = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+    # Clear QB filter button
+    observeEvent(input$clear_qb, {
+      updateSelectInput(session, "qb_team", selected = "")
+      updateSelectInput(session, "qb_selector", selected = "ALL")
+      
+      # Reset week selector to all weeks
+      all_weeks <- sort(unique(data()$week))
+      lapply(all_weeks, function(week) {
+        shinyjs::runjs(sprintf("$('#top_performers-week_selector-week_box_%s').addClass('selected');", week))
+      })
+    })
+    
+    # Clear excluded players button
+    observeEvent(input$clear_excluded, {
+      updateSelectizeInput(session, "excluded_players", selected = character(0))
+    })
+    
+    # Populate excluded players selector
+    observe({
+      req(data())
+      
+      all_players <- data() %>%
+        select(player) %>%
+        distinct() %>%
+        arrange(player) %>%
+        pull(player)
+      
+      updateSelectizeInput(session, "excluded_players",
+                           choices = all_players,
+                           server = TRUE)
+    })
+    
+    # Initialize QB selector
+    observe({
+      req(qb_data())
+      
+      all_qbs <- qb_data() %>%
+        filter(season == 2025) %>%
+        pull(team_qb) %>%
+        unique() %>%
+        sort()
+      
+      qb_choices <- c("All Quarterbacks" = "ALL",
+                      setNames(all_qbs, all_qbs))
+      
+      updateSelectInput(session, "qb_selector",
+                        choices = qb_choices,
+                        selected = "ALL")
+    })
+    
+    # Update QB selector when team is selected
+    observeEvent(input$qb_team, {
+      req(qb_data())
+      
+      if (is.null(input$qb_team) || input$qb_team == "") {
+        all_qbs <- qb_data() %>%
+          filter(season == 2025) %>%
+          pull(team_qb) %>%
+          unique() %>%
+          sort()
+        
+        qb_choices <- c("All Quarterbacks" = "ALL",
+                        setNames(all_qbs, all_qbs))
+        
+        updateSelectInput(session, "qb_selector",
+                          choices = qb_choices,
+                          selected = "ALL")
+      } else {
+        team_qbs <- qb_data() %>%
+          filter(
+            season == 2025,
+            posteam == input$qb_team
+          ) %>%
+          pull(team_qb) %>%
+          unique() %>%
+          sort()
+        
+        qb_choices <- c("All Quarterbacks" = "ALL",
+                        setNames(team_qbs, team_qbs))
+        
+        updateSelectInput(session, "qb_selector",
+                          choices = qb_choices,
+                          selected = "ALL")
+      }
+    })
+    
+    # Reactive for QB-filtered weeks
+    qb_filtered_weeks <- reactive({
+      req(qb_data())
+      
+      if (is.null(input$qb_selector) || input$qb_selector == "ALL") {
+        return(NULL)
+      }
+      
+      if (!is.null(input$qb_team) && input$qb_team != "") {
+        qb_weeks <- qb_data() %>%
+          filter(
+            season == 2025,
+            posteam == input$qb_team,
+            team_qb == input$qb_selector
+          ) %>%
+          pull(week) %>%
+          unique() %>%
+          sort()
+      } else {
+        qb_weeks <- qb_data() %>%
+          filter(
+            season == 2025,
+            team_qb == input$qb_selector
+          ) %>%
+          pull(week) %>%
+          unique() %>%
+          sort()
+      }
+      
+      return(qb_weeks)
+    })
+    
     # Initialize week selector
     selected_weeks <- comp_week_selector_server("week_selector", data)
+    
+    # Auto-update week selector when QB filter changes
+    observeEvent(qb_filtered_weeks(), {
+      qb_weeks <- qb_filtered_weeks()
+      all_weeks <- sort(unique(data()$week))
+      
+      if (!is.null(qb_weeks) && length(qb_weeks) > 0) {
+        shinyjs::runjs(sprintf("
+          var qbWeeks = [%s];
+          var allWeeks = [%s];
+          
+          allWeeks.forEach(function(week) {
+            var element = $('#top_performers-week_selector-week_box_' + week);
+            if (qbWeeks.includes(week)) {
+              element.addClass('selected');
+            } else {
+              element.removeClass('selected');
+            }
+          });
+          
+          Shiny.setInputValue('top_performers-week_selector-weeks', qbWeeks, {priority: 'event'});
+        ", 
+                               paste(qb_weeks, collapse = ","),
+                               paste(all_weeks, collapse = ",")))
+      }
+    }, ignoreNULL = FALSE, ignoreInit = TRUE)
+    
+    # Reactive data with QB and week filtering
+    filtered_data_final <- reactive({
+      base_data <- data()
+      qb_weeks <- qb_filtered_weeks()
+      user_weeks <- selected_weeks()
+      
+      if (!is.null(qb_weeks) && length(qb_weeks) > 0) {
+        final_weeks <- intersect(qb_weeks, user_weeks)
+        if (length(final_weeks) > 0) {
+          base_data <- base_data %>%
+            filter(week %in% final_weeks)
+        } else {
+          base_data <- base_data %>%
+            filter(week %in% qb_weeks)
+        }
+      } else {
+        base_data <- base_data %>%
+          filter(week %in% user_weeks)
+      }
+      
+      return(base_data)
+    })
     
     # Dynamic title
     output$table_title <- renderText({
@@ -242,7 +496,7 @@ mod_top_performers_server <- function(id, data, rookie_list = NULL) {
     
     # Prepare table data
     table_data <- reactive({
-      req(data(), input$position, input$min_games)
+      req(filtered_data_final(), input$position, input$min_games)
       req(selected_weeks())
       
       num_players_val <- if (!is.null(input$num_players)) {
@@ -253,6 +507,7 @@ mod_top_performers_server <- function(id, data, rookie_list = NULL) {
       }
       
       rookies_selected <- isTRUE(input$rookies_only)
+      excluded_players_val <- input$excluded_players
       
       if (rookies_selected) {
         if (is.null(rookie_list) || length(rookie_list) == 0) {
@@ -262,13 +517,14 @@ mod_top_performers_server <- function(id, data, rookie_list = NULL) {
       }
       
       prepare_top_performers_data(
-        data(),
+        filtered_data_final(),
         input$position,
         selected_weeks(),
         input$min_games,
         num_players_val,
         rookies_only = rookies_selected,
-        rookie_list = rookie_list
+        rookie_list = rookie_list,
+        excluded_players = excluded_players_val
       )
     })
     

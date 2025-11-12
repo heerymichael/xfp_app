@@ -188,6 +188,32 @@ mod_over_under_performers_ui <- function(id) {
         )
       ),
       
+      # Fourth row - Exclude Players
+      div(
+        class = "qb-filter-container",
+        style = "margin-top: 20px;",
+        tags$label("EXCLUDE PLAYERS", class = "qb-filter-label"),
+        fluidRow(
+          column(10,
+                 div(class = "form-group",
+                     tags$label("SELECT PLAYERS TO EXCLUDE FROM ANALYSIS", class = "control-label"),
+                     selectizeInput(ns("excluded_players"), NULL,
+                                    choices = NULL,
+                                    multiple = TRUE,
+                                    options = list(
+                                      placeholder = "Select players to exclude from analysis",
+                                      maxItems = NULL
+                                    ),
+                                    width = "100%"))),
+          column(2,
+                 div(class = "form-group",
+                     tags$label("", class = "control-label", style = "display: block; height: 39px;"),
+                     actionButton(ns("clear_excluded"), "Clear All",
+                                  class = "btn-sm",
+                                  style = "width: 100%; margin-top: 0;")))
+        )
+      ),
+      
       # Week selector
       comp_week_selector_ui(ns("week_selector")),
       
@@ -269,6 +295,26 @@ mod_over_under_performers_server <- function(id, data, qb_data, rookie_list = NU
       lapply(all_weeks, function(week) {
         shinyjs::runjs(sprintf("$('#over_under_performers-week_selector-week_box_%s').addClass('selected');", week))
       })
+    })
+    
+    # Clear excluded players button
+    observeEvent(input$clear_excluded, {
+      updateSelectizeInput(session, "excluded_players", selected = character(0))
+    })
+    
+    # Populate excluded players selector with all eligible players
+    observe({
+      req(data())
+      
+      all_players <- data() %>%
+        select(player) %>%
+        distinct() %>%
+        arrange(player) %>%
+        pull(player)
+      
+      updateSelectizeInput(session, "excluded_players",
+                           choices = all_players,
+                           server = TRUE)
     })
     
     # Initialize QB selector
@@ -500,6 +546,7 @@ mod_over_under_performers_server <- function(id, data, qb_data, rookie_list = NU
       rookies_selected <- isTRUE(input$rookies_only)
       view_mode <- input$view_mode
       min_xfp_val <- input$min_xfp %||% 0
+      excluded_players_val <- input$excluded_players
       
       if (rookies_selected) {
         if (is.null(rookie_list) || length(rookie_list) == 0) {
@@ -517,7 +564,8 @@ mod_over_under_performers_server <- function(id, data, qb_data, rookie_list = NU
         rookies_only = rookies_selected,
         rookie_list = rookie_list,
         view_mode = view_mode,
-        min_xfp = min_xfp_val
+        min_xfp = min_xfp_val,
+        excluded_players = excluded_players_val
       )
     })
     

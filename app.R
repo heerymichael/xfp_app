@@ -3,6 +3,31 @@
 # Source global.R explicitly
 if(file.exists("global.R")) {
   source("global.R")
+  # Source the Over/Under Performers module
+  source("modules/mod_over_under_performers.R")
+  
+  # Load QB data from separate Google Sheet
+  QB_DATA_SHEET_URL <- "https://docs.google.com/spreadsheets/d/10MbQBNY1fNJ1pp5VnNXmEtX-TdAsaN_hOE6DpVy-krI/edit?gid=0#gid=0"
+  
+  qb_data_raw <- tryCatch({
+    read_sheet(
+      QB_DATA_SHEET_URL,
+      col_types = "c"
+    ) %>%
+      mutate(
+        week = as.numeric(week),
+        season = as.numeric(season)
+      )
+  }, error = function(e) {
+    cat("Warning: Could not load qb_data. Error:", e$message, "\n")
+    data.frame(
+      week = numeric(0),
+      season = numeric(0),
+      team_qb = character(0),
+      posteam = character(0),
+      stringsAsFactors = FALSE
+    )
+  })
 } else {
   # If global.R doesn't exist or isn't loading, source everything directly here
   
@@ -32,6 +57,7 @@ if(file.exists("global.R")) {
   source("modules/components/comp_week_selector.R")
   source("modules/components/comp_team_selector.R")
   source("modules/mod_top_performers.R")
+  source("modules/mod_over_under_performers.R")
   source("modules/mod_team_summaries.R")
   source("modules/mod_team_detail.R")
   
@@ -65,10 +91,22 @@ if(file.exists("global.R")) {
   # Process data
   combined_xfp_data <- process_xfp_data(combined_xfp_data)
   all_players_xfp <- process_xfp_data(all_players_xfp)
+  
+  # Create dummy qb_data
+  qb_data_raw <- data.frame(
+    week = numeric(0),
+    season = numeric(0),
+    team_qb = character(0),
+    posteam = character(0)
+  )
 }
 
-# UI Definition
-ui <- fluidPage(
+# UI Definition - Changed from fluidPage to navbarPage
+ui <- navbarPage(
+  title = div(
+    tags$img(src = "logos/ETR_ball_logo.png", height = "30px", style = "margin-right: 10px; vertical-align: middle;"),
+    span("xFantasy Points", style = "vertical-align: middle;")
+  ),
   theme = bs_theme(
     version = 5,
     bg = "#f0f4f1",
@@ -81,22 +119,84 @@ ui <- fluidPage(
     `enable-shadows` = TRUE,
     "headings-font-weight" = 900
   ),
+  windowTitle = "xFantasy Points",
   
   # Head tags
-  tags$head(
-    tags$link(
-      rel = "stylesheet",
-      href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
-    ),
-    tags$link(
-      rel = "stylesheet",
-      href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    ),
-    tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),
-    tags$script(HTML(screenshot_js())),
-    
-    # Complete CSS with all fixes
-    tags$style(HTML("
+  header = tagList(
+    tags$head(
+      tags$link(
+        rel = "stylesheet",
+        href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+      ),
+      tags$link(
+        rel = "stylesheet",
+        href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      ),
+      tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"),
+      tags$script(HTML(screenshot_js())),
+      
+      # Complete CSS with all fixes
+      tags$style(HTML("
+      /* Navbar styling with animated highlighter effect */
+      .navbar {
+  background: var(--etr-bg-secondary, #f0f5f1) !important;
+  border-bottom: 2px solid #e8ede9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 1rem 1rem 0.5rem 1rem !important;
+  position: relative;
+}
+
+.navbar-brand {
+  color: var(--etr-gray-900, #2d2d2d) !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+}
+
+.navbar-nav .nav-link {
+  color: var(--etr-gray-600, #666) !important;
+  font-weight: 500;
+  font-size: 2rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0;
+  margin: 0 10px;
+  transition: var(--etr-transition-default, var(--transition-default));
+  position: relative;
+  background: transparent !important;
+  border: none !important;
+  font-family: var(--etr-font-primary, var(--font-stack-primary));
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--etr-primary, #37af4a) !important;
+  background: transparent !important;
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--etr-gray-900, #2d2d2d) !important;
+  background: transparent !important;
+  font-weight: 700 !important;
+  position: relative;
+  z-index: 2;
+}
+
+.navbar-nav .nav-link.active::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 20px;
+  width: 0;
+  transform: translateY(-50%) skewX(-3deg);
+  background: linear-gradient(90deg, rgba(86, 214, 105, 0.8) 0%, rgba(86, 214, 105, 0.6) 100%);
+  z-index: -1;
+  animation: highlighterDraw 0.8s ease-out forwards;
+}
+
+@keyframes highlighterDraw {
+  from { width: 0; }
+  to { width: 100%; }
+}
+      
       body {
         font-family: 'Inter', -apple-system, sans-serif;
         background: #f0f4f1;
@@ -213,6 +313,7 @@ ui <- fluidPage(
       
       /* Fix reactable title spacing - TIGHT */
       #top_performers-table_container h1,
+      #over_under_performers-table_container h1,
       #team_summaries-team_table_container h1,
       #team_detail-team_facet_container h1 {
         margin-bottom: 0 !important;
@@ -221,6 +322,7 @@ ui <- fluidPage(
       }
       
       #top_performers-position_subtitle,
+      #over_under_performers-position_subtitle,
       #team_summaries-team_subtitle,
       #team_detail-facet_subtitle {
         margin-top: 0 !important;
@@ -346,6 +448,7 @@ ui <- fluidPage(
       
       /* Container specific styling */
       #top_performers-table_container,
+      #over_under_performers-table_container,
       #team_summaries-team_table_container,
       #team_detail-team_facet_container,
       #team_detail-player_chips_container {
@@ -404,54 +507,64 @@ ui <- fluidPage(
         opacity: 1 !important;
       }
     "))
+    ),
+    
+    # Enable shinyjs
+    shinyjs::useShinyjs(),
+    
+    # Custom CSS
+    tags$style(HTML(xfp_custom_css()))
   ),
   
-  # Enable shinyjs
-  shinyjs::useShinyjs(),
-  
-  # Main content
-  div(
-    class = "main-container",
-    
-    # Title section - UPDATED WITH LARGER SIZE
-    div(style = "margin-bottom: 60px;",
-        h1("xFantasy Points Analysis",
-           style = "font-size: 4rem !important; font-weight: 900 !important; border: none !important; padding-bottom: 0 !important;")
-    ),
-    
-    # Top Performers Section
-    div(style = "margin-bottom: 60px;",
-        mod_top_performers_ui("top_performers")
-    ),
-    
-    # Separator
-    hr(class = "section-separator"),
-    
-    # Team Summaries Section
-    div(style = "margin-bottom: 60px;",
-        mod_team_summaries_ui("team_summaries")
-    ),
-    
-    # Separator
-    hr(class = "section-separator"),
-    
-    # Team Detail Section
-    div(style = "margin-bottom: 60px;",
-        mod_team_detail_ui("team_detail")
+  # Tab 1: Top Performers
+  tabPanel(
+    "Top Performers",
+    div(
+      class = "content-wrapper",
+      mod_top_performers_ui("top_performers")
     )
   ),
   
-  # Custom CSS
-  tags$style(HTML(xfp_custom_css()))
+  # Tab 2: Over/Under Performers
+  tabPanel(
+    "Over/Under Performers",
+    div(
+      class = "content-wrapper",
+      mod_over_under_performers_ui("over_under_performers")
+    )
+  ),
+  
+  # Tab 3: Team Analysis
+  tabPanel(
+    "Team Analysis",
+    div(
+      class = "content-wrapper",
+      
+      # Team Summaries Section
+      div(style = "margin-bottom: 60px;",
+          mod_team_summaries_ui("team_summaries")
+      ),
+      
+      # Separator
+      hr(class = "section-separator"),
+      
+      # Team Detail Section
+      div(style = "margin-bottom: 60px;",
+          mod_team_detail_ui("team_detail")
+      )
+    )
+  )
 )
 
 # Server Definition
 server <- function(input, output, session) {
   # Create reactive data sources
   xfp_data <- reactive({ combined_xfp_data })
+  qb_data <- reactive({ qb_data_raw })
   
   # Initialize modules
-  mod_top_performers_server("top_performers", xfp_data, rookie_list)
+  mod_top_performers_server("top_performers", xfp_data, qb_data, rookie_list)
+  mod_over_under_performers_server("over_under_performers", xfp_data, qb_data, rookie_list)
   mod_team_summaries_server("team_summaries", xfp_data)
   mod_team_detail_server("team_detail", xfp_data)
 }
