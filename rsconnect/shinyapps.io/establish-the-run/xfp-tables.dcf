@@ -1,0 +1,10 @@
+name: xfp-tables
+title:
+username: establish-the-run
+account: establish-the-run
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16168266
+bundleId: 11231875
+url: https://establish-the-run.shinyapps.io/xfp-tables/
+version: 1

@@ -296,7 +296,7 @@ xfp_custom_css <- function() {
     .expected-label {
       position: absolute;
       right: 8px;
-      top: -10px;
+      top: -12px;
       color: ", etr_colors$gray_800, ";
       background-color: transparent;
       text-shadow: 
@@ -305,7 +305,7 @@ xfp_custom_css <- function() {
         1px 1px 3px white, -1px -1px 3px white, 1px -1px 3px white, -1px 1px 3px white;
       z-index: 3;
       font-weight: ", etr_fonts$weight_bold, ";
-      font-size: 16px;
+      font-size: 14px;
       line-height: 20px;
       font-family: 'Inter', sans-serif !important;
     }

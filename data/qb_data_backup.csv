@@ -1,4 +1,6 @@
 season,week,posteam,team_qb
+2025,12,ARI,Jacoby Brissett
+2025,11,ARI,Jacoby Brissett
 2025,10,ARI,Jacoby Brissett
 2025,9,ARI,Jacoby Brissett
 2025,7,ARI,Jacoby Brissett
@@ -42,6 +44,8 @@ season,week,posteam,team_qb
 2023,3,ARI,Joshua Dobbs
 2023,2,ARI,Joshua Dobbs
 2023,1,ARI,Joshua Dobbs
+2025,12,ATL,Kirk Cousins
+2025,11,ATL,Michael Penix
 2025,10,ATL,Michael Penix
 2025,9,ATL,Michael Penix
 2025,8,ATL,Kirk Cousins
@@ -85,6 +89,8 @@ season,week,posteam,team_qb
 2023,3,ATL,Desmond Ridder
 2023,2,ATL,Desmond Ridder
 2023,1,ATL,Desmond Ridder
+2025,12,BAL,Lamar Jackson
+2025,11,BAL,Lamar Jackson
 2025,10,BAL,Lamar Jackson
 2025,9,BAL,Lamar Jackson
 2025,8,BAL,Tyler Huntley
@@ -132,6 +138,8 @@ season,week,posteam,team_qb
 2023,3,BAL,Lamar Jackson
 2023,2,BAL,Lamar Jackson
 2023,1,BAL,Lamar Jackson
+2025,12,BUF,Josh Allen
+2025,11,BUF,Josh Allen
 2025,10,BUF,Josh Allen
 2025,9,BUF,Josh Allen
 2025,8,BUF,Josh Allen
@@ -180,6 +188,8 @@ season,week,posteam,team_qb
 2023,3,BUF,Josh Allen
 2023,2,BUF,Josh Allen
 2023,1,BUF,Josh Allen
+2025,12,CAR,Bryce Young
+2025,11,CAR,Bryce Young
 2025,10,CAR,Bryce Young
 2025,9,CAR,Bryce Young
 2025,8,CAR,Andy Dalton
@@ -224,6 +234,8 @@ season,week,posteam,team_qb
 2023,3,CAR,Andy Dalton
 2023,2,CAR,Bryce Young
 2023,1,CAR,Bryce Young
+2025,12,CHI,Caleb Williams
+2025,11,CHI,Caleb Williams
 2025,10,CHI,Caleb Williams
 2025,9,CHI,Caleb Williams
 2025,8,CHI,Caleb Williams
@@ -267,6 +279,8 @@ season,week,posteam,team_qb
 2023,3,CHI,Justin Fields
 2023,2,CHI,Justin Fields
 2023,1,CHI,Justin Fields
+2025,12,CIN,Joe Flacco
+2025,11,CIN,Joe Flacco
 2025,9,CIN,Joe Flacco
 2025,8,CIN,Joe Flacco
 2025,7,CIN,Joe Flacco
@@ -310,6 +324,8 @@ season,week,posteam,team_qb
 2023,3,CIN,Joe Burrow
 2023,2,CIN,Joe Burrow
 2023,1,CIN,Joe Burrow
+2025,12,CLE,Shedeur Sanders
+2025,11,CLE,Shedeur Sanders
 2025,10,CLE,Dillon Gabriel
 2025,8,CLE,Dillon Gabriel
 2025,7,CLE,Dillon Gabriel
@@ -354,6 +370,8 @@ season,week,posteam,team_qb
 2023,3,CLE,Deshaun Watson
 2023,2,CLE,Deshaun Watson
 2023,1,CLE,Deshaun Watson
+2025,12,DAL,Dak Prescott
+2025,11,DAL,Dak Prescott
 2025,9,DAL,Dak Prescott
 2025,8,DAL,Dak Prescott
 2025,7,DAL,Dak Prescott
@@ -398,6 +416,7 @@ season,week,posteam,team_qb
 2023,3,DAL,Dak Prescott
 2023,2,DAL,Dak Prescott
 2023,1,DAL,Dak Prescott
+2025,11,DEN,Bo Nix
 2025,10,DEN,Bo Nix
 2025,9,DEN,Bo Nix
 2025,8,DEN,Bo Nix
@@ -443,6 +462,8 @@ season,week,posteam,team_qb
 2023,3,DEN,Russell Wilson
 2023,2,DEN,Russell Wilson
 2023,1,DEN,Russell Wilson
+2025,12,DET,Jared Goff
+2025,11,DET,Jared Goff
 2025,10,DET,Jared Goff
 2025,9,DET,Jared Goff
 2025,7,DET,Jared Goff
@@ -490,6 +511,8 @@ season,week,posteam,team_qb
 2023,3,DET,Jared Goff
 2023,2,DET,Jared Goff
 2023,1,DET,Jared Goff
+2025,12,GB,Jordan Love
+2025,11,GB,Jordan Love
 2025,10,GB,Jordan Love
 2025,9,GB,Jordan Love
 2025,8,GB,Jordan Love
@@ -536,6 +559,8 @@ season,week,posteam,team_qb
 2023,3,GB,Jordan Love
 2023,2,GB,Jordan Love
 2023,1,GB,Jordan Love
+2025,12,HOU,Davis Mills
+2025,11,HOU,Davis Mills
 2025,10,HOU,Davis Mills
 2025,9,HOU,Davis Mills
 2025,8,HOU,CJ Stroud
@@ -583,6 +608,7 @@ season,week,posteam,team_qb
 2023,3,HOU,C.J. Stroud
 2023,2,HOU,C.J. Stroud
 2023,1,HOU,C.J. Stroud
+2025,12,IND,Daniel Jones
 2025,10,IND,Daniel Jones
 2025,9,IND,Daniel Jones
 2025,8,IND,Daniel Jones
@@ -627,6 +653,8 @@ season,week,posteam,team_qb
 2023,3,IND,Gardner Minshew
 2023,2,IND,Gardner Minshew
 2023,1,IND,Anthony Richardson
+2025,12,JAX,Trevor Lawrence
+2025,11,JAX,Trevor Lawrence
 2025,10,JAX,Trevor Lawrence
 2025,9,JAX,Trevor Lawrence
 2025,7,JAX,Trevor Lawrence
@@ -670,6 +698,8 @@ season,week,posteam,team_qb
 2023,3,JAX,Trevor Lawrence
 2023,2,JAX,Trevor Lawrence
 2023,1,JAX,Trevor Lawrence
+2025,12,KC,Patrick Mahomes
+2025,11,KC,Patrick Mahomes
 2025,9,KC,Patrick Mahomes
 2025,8,KC,Patrick Mahomes
 2025,7,KC,Patrick Mahomes
@@ -720,6 +750,8 @@ season,week,posteam,team_qb
 2023,3,KC,Patrick Mahomes
 2023,2,KC,Patrick Mahomes
 2023,1,KC,Patrick Mahomes
+2025,12,LA,Matthew Stafford
+2025,11,LA,Matthew Stafford
 2025,10,LA,Matthew Stafford
 2025,9,LA,Matthew Stafford
 2025,7,LA,Matthew Stafford
@@ -766,6 +798,7 @@ season,week,posteam,team_qb
 2023,3,LA,Matthew Stafford
 2023,2,LA,Matthew Stafford
 2023,1,LA,Matthew Stafford
+2025,11,LAC,Justin Herbert
 2025,10,LAC,Justin Herbert
 2025,9,LAC,Justin Herbert
 2025,8,LAC,Justin Herbert
@@ -811,6 +844,8 @@ season,week,posteam,team_qb
 2023,3,LAC,Justin Herbert
 2023,2,LAC,Justin Herbert
 2023,1,LAC,Justin Herbert
+2025,12,LV,Geno Smith
+2025,11,LV,Geno Smith
 2025,10,LV,Geno Smith
 2025,9,LV,Geno Smith
 2025,7,LV,Geno Smith
@@ -854,6 +889,7 @@ season,week,posteam,team_qb
 2023,3,LV,Jimmy Garoppolo
 2023,2,LV,Jimmy Garoppolo
 2023,1,LV,Jimmy Garoppolo
+2025,11,MIA,Tua Tagovailoa
 2025,10,MIA,Tua Tagovailoa
 2025,9,MIA,Tua Tagovailoa
 2025,8,MIA,Tua Tagovailoa
@@ -899,6 +935,8 @@ season,week,posteam,team_qb
 2023,3,MIA,Tua Tagovailoa
 2023,2,MIA,Tua Tagovailoa
 2023,1,MIA,Tua Tagovailoa
+2025,12,MIN,JJ McCarthy
+2025,11,MIN,JJ McCarthy
 2025,10,MIN,JJ McCarthy
 2025,9,MIN,JJ McCarthy
 2025,8,MIN,Carson Wentz
@@ -943,6 +981,8 @@ season,week,posteam,team_qb
 2023,3,MIN,Kirk Cousins
 2023,2,MIN,Kirk Cousins
 2023,1,MIN,Kirk Cousins
+2025,12,NE,Drake Maye
+2025,11,NE,Drake Maye
 2025,10,NE,Drake Maye
 2025,9,NE,Drake Maye
 2025,8,NE,Drake Maye
@@ -987,6 +1027,7 @@ season,week,posteam,team_qb
 2023,3,NE,Mac Jones
 2023,2,NE,Mac Jones
 2023,1,NE,Mac Jones
+2025,12,NO,Tyler Shough
 2025,10,NO,Tyler Shough
 2025,9,NO,Tyler Shough
 2025,8,NO,Tyler Shough
@@ -1031,6 +1072,8 @@ season,week,posteam,team_qb
 2023,3,NO,Derek Carr
 2023,2,NO,Derek Carr
 2023,1,NO,Derek Carr
+2025,12,NYG,Jameis Winston
+2025,11,NYG,Jameis Winston
 2025,10,NYG,Jaxson Dart
 2025,9,NYG,Jaxson Dart
 2025,8,NYG,Jaxson Dart
@@ -1075,6 +1118,8 @@ season,week,posteam,team_qb
 2023,3,NYG,Daniel Jones
 2023,2,NYG,Daniel Jones
 2023,1,NYG,Daniel Jones
+2025,12,NYJ,Tyrod Taylor
+2025,11,NYJ,Justin Fields
 2025,10,NYJ,Justin Fields
 2025,8,NYJ,Justin Fields
 2025,7,NYJ,Tyrod Taylor
@@ -1118,6 +1163,8 @@ season,week,posteam,team_qb
 2023,3,NYJ,Zach Wilson
 2023,2,NYJ,Zach Wilson
 2023,1,NYJ,Zach Wilson
+2025,12,PHI,Jalen Hurts
+2025,11,PHI,Jalen Hurts
 2025,10,PHI,Jalen Hurts
 2025,8,PHI,Jalen Hurts
 2025,7,PHI,Jalen Hurts
@@ -1166,6 +1213,8 @@ season,week,posteam,team_qb
 2023,3,PHI,Jalen Hurts
 2023,2,PHI,Jalen Hurts
 2023,1,PHI,Jalen Hurts
+2025,12,PIT,Mason Rudolph
+2025,11,PIT,Aaron Rodgers
 2025,10,PIT,Aaron Rodgers
 2025,9,PIT,Aaron Rodgers
 2025,8,PIT,Aaron Rodgers
@@ -1211,6 +1260,8 @@ season,week,posteam,team_qb
 2023,3,PIT,Kenny Pickett
 2023,2,PIT,Kenny Pickett
 2023,1,PIT,Kenny Pickett
+2025,12,SEA,Sam Darnold
+2025,11,SEA,Sam Darnold
 2025,10,SEA,Sam Darnold
 2025,9,SEA,Sam Darnold
 2025,7,SEA,Sam Darnold
@@ -1254,6 +1305,8 @@ season,week,posteam,team_qb
 2023,3,SEA,Geno Smith
 2023,2,SEA,Geno Smith
 2023,1,SEA,Geno Smith
+2025,12,SF,Brock Purdy
+2025,11,SF,Brock Purdy
 2025,10,SF,Mac Jones
 2025,9,SF,Mac Jones
 2025,8,SF,Mac Jones
@@ -1301,6 +1354,8 @@ season,week,posteam,team_qb
 2023,3,SF,Brock Purdy
 2023,2,SF,Brock Purdy
 2023,1,SF,Brock Purdy
+2025,12,TB,Baker Mayfield
+2025,11,TB,Baker Mayfield
 2025,10,TB,Baker Mayfield
 2025,8,TB,Baker Mayfield
 2025,7,TB,Baker Mayfield
@@ -1347,6 +1402,8 @@ season,week,posteam,team_qb
 2023,3,TB,Baker Mayfield
 2023,2,TB,Baker Mayfield
 2023,1,TB,Baker Mayfield
+2025,12,TEN,Cameron Ward
+2025,11,TEN,Cameron Ward
 2025,9,TEN,Cameron Ward
 2025,8,TEN,Cameron Ward
 2025,7,TEN,Cameron Ward
@@ -1390,6 +1447,7 @@ season,week,posteam,team_qb
 2023,3,TEN,Ryan Tannehill
 2023,2,TEN,Ryan Tannehill
 2023,1,TEN,Ryan Tannehill
+2025,11,WAS,Marcus Mariota
 2025,10,WAS,Marcus Mariota
 2025,9,WAS,Jayden Daniels
 2025,8,WAS,Marcus Mariota
